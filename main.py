@@ -45,11 +45,9 @@ while (True):
             x1, y1, x2, y2 = line[0]
 
             slope = (y2-y1) / ((x2-x1) + 1) # +1 prevents denominator from being 0
-            abs_slope = abs(slope) + 0.01
+            abs_slope = abs(slope) + 0.01 # +.01 to prevent slope from being inf
 
-            # if slopes are positive, x1 y1 is on top
-
-            x1_true = max(x1, x2)
+            x1_true = max(x1, x2) # making x1 and y1 always on bottom
             x2_true = min(x1, x2)
             y1_true = max(y1, y2)
             y2_true = min(y1, y2)
