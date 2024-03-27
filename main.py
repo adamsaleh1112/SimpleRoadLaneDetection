@@ -37,12 +37,40 @@ while (True):
     lines = cv2.HoughLinesP(edges, rho=1, theta=np.pi / 180, threshold=50, minLineLength=5, maxLineGap=150)
 
     if lines is not None:
+
+        right_lines = []
+        left_lines = []
+
         for line in lines:
             x1, y1, x2, y2 = line[0]
-            slope = (y2-y1) / (x2-x1)
-            arctan_slope = np.arctan(slope)
-            cv2.line(result_for_adding, (x1, y1), (x2, y2), (255, 255, 0), 5)
-            cv2.line(result, (x1, y1), (x2, y2), (0, 255, 0), 5)
+
+            slope = (y2-y1) / ((x2-x1) + 1) # +1 prevents denominator from being 0
+            abs_slope = abs(slope) + 0.01
+
+            # if slopes are positive, x1 y1 is on top
+
+            x1_true = max(x1, x2)
+            x2_true = min(x1, x2)
+            y1_true = max(y1, y2)
+            y2_true = min(y1, y2)
+
+            bottom_y_value = y1_true
+            distance_to_bottom = 640 - bottom_y_value
+            extended_x_value = int(x1_true + (x1_true/abs_slope))
+            extended_y_value = 640
+
+            #cv2.line(result_for_adding, (x1, y1), (x2, y2), (0, 0, 255), 5)
+            cv2.line(result, (extended_x_value, extended_y_value), (x2_true, y2_true), (0, 0, 255), 5)
+            cv2.circle(result, (x1_true, y1_true), 3, (255, 255, 255), 5)
+
+
+        # EXTEND LINES TO TOP AND BOTTOM OF FRAME
+        # GET X1 AND X2 FOR ALL LINES ON BOTH SIDES
+        # CHECK IF X's ARE WITHIN CERTAIN VALUES THAT ARE ACCEPTABLE AS A LANE (0 -> 100 on left, 400 -> 500 on right)
+        # IF TRUE
+        #   GET AVERAGE X1 AND X2
+        #   DRAW LINES BY USING TOP AND BOTTOM AS Y VALUES THEN AVERAGE X's FOR X VALUES
+
 
     # UN-PERSPECTIVE TRANSFORM
     matrix_reverse = cv2.getPerspectiveTransform(pts2, pts1)
@@ -65,10 +93,12 @@ while (True):
     cv2.imshow('added_overlay', added_overlay)
     cv2.imshow('result', result)
 
-    time.sleep(0.02)
+    #time.sleep(0.02)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
 vid.release()
 cv2.destroyAllWindows()
+
+# Avergae function https://www.geeksforgeeks.org/find-average-list-python/
